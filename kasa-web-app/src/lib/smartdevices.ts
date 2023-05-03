@@ -13,7 +13,7 @@ export class SmartDevice {
         this.deviceType = 1;
         this.deviceId = "8006E1AF7F5634FA56B4FD9131F313862053D3BE";
         this.name = "Smart Wi-Fi Plug Mini";
-        this.alias = "Tank Lamp 1";
+        this.alias = "Table";
         this.mac = "9C:A2:F4:0C:C5:96";
         this.hasChildren = false;
         this.children = [];
