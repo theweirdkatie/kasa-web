@@ -1,8 +1,9 @@
-from typing import Union
-import jsonpickle
+from typing import Union, List
+import json
 from fastapi import FastAPI
 from kasa import Discover, SmartDevice
 from enum import Enum, auto
+import asyncio
 
 app = FastAPI()
 
@@ -23,11 +24,26 @@ class SmartDeviceAPI:
     host: str
     deviceType: DeviceType
     deviceId: str
-    name: str
     alias: str
     mac: str
-    hasChildren: bool
-    children: list(ChildDevice)
+
+    def __init__(self, device: SmartDevice):
+        self.host = device.host
+        self.deviceType = device.device_type
+        self.deviceId = device.device_id
+        self.alias = device.alias
+        self.mac = device.mac
+
+    def toJSON(self):
+        _json = {
+            "host": self.host,
+            # "deviceType": self.deviceType,
+            "deviceId": self.deviceId,
+            "alias": self.alias,
+            "mac": self.mac
+        }
+
+        return json.dumps(_json)
 
 @app.get("/")
 async def root():
@@ -38,26 +54,17 @@ async def list_devices(host: Union[str, None] = None):
     if host:
         dev = SmartDevice(host)
         await dev.update()
-        return jsonpickle.encode(dev)
-    found_devices = await Discover.discover()
-
-    devices = []
-
-    for device in found_devices.values():
-        devices.append(convert_device(device))
-
-    return jsonpickle.encode(devices)
+        return dev
     
-async def convert_device(device: SmartDevice):
-    d = SmartDeviceAPI
-    d.alias = device.alias
-    d.host = device.host
-    d.deviceId = device.device_id
-    d.deviceType = device.device_type
-    d.hasChildren = len(device.children) > 0
-    if d.hasChildren:
-        for child in device.children:
-            c = convert_device(child)
-            d.children.append(c)
+    try: 
+        found_devices = await (Discover.discover())
 
-    return d
+        devices = []
+
+        for device in found_devices.values():
+            obj = SmartDeviceAPI(device)
+            devices.append(obj.toJSON())
+
+        return devices
+    except:
+        return {"error": "No devices found"}
