@@ -30,3 +30,8 @@ class ChildDevice {
         this.alias = "";
     }
 }
+
+export async function findDevices() {
+    let response = await fetch("http://localhost:8000/devices/", {"method": "GET"});
+    return response.json()
+}
