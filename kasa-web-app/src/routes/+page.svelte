@@ -1,8 +1,8 @@
 <script lang="ts">
     import { Button } from 'flowbite-svelte';
-    import { LightBulb } from 'svelte-heros-v2';
+    import { LightBulb, MagnifyingGlass } from 'svelte-heros-v2';
     import DeviceList from '../lib/devicelist.svelte';
-    import { findDevices } from '../lib/smartdevices';
+    import { findDevices, SmartDevice } from '../lib/smartdevices';
 
     // let bulb = new SmartDevice();
     let bulb = {
@@ -10,13 +10,13 @@
         state: true,
     };
 
-    let resp = "";
+    let devices: SmartDevice[] = [];
     let looking = false;
 
     async function find_devices() {
         console.log("looking");
         looking = true;
-        resp = await findDevices();
+        devices = await findDevices();
         looking = false;
         console.log("done");
     }
@@ -24,14 +24,11 @@
 </script>
 
 <div class="w-full grid grid-cols-3 gap-3 pt-3.5">
-    <div class="col-start-2 place-content-center">
-        <Button on:click{find_devices}>Find Devices</Button>
+    <div class="col-start-2">
+        <Button on:click={find_devices} pill={true} color="light" class="!p-2 h-auto" size="xl"><MagnifyingGlass size="20"/></Button>
         <Button>Filter</Button>
     </div>
     <div class="col-start-2">
-        <p>{resp}</p>
-    </div>
-    <div class="col-start-2">
-        <DeviceList />
+        <DeviceList smartdevices={devices} />
     </div>
 </div>

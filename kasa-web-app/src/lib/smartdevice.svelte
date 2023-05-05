@@ -12,7 +12,7 @@
         device.state = !device.state;
     }
 
-    let showData = true;
+    let showData = false;
 
 </script>
 

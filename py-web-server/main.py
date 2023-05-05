@@ -67,12 +67,45 @@ async def list_devices(host: Union[str, None] = None):
 
         return devices
     except:
-        return TEST_DATA
+        return "error"
+    
+    # For testing
+    # return json.dumps(TEST_DATA)
 
-TEST_DATA = '''[
-  "{\"host\": \"192.168.1.12\", \"deviceId\": \"6C:5A:B0:15:F2:EF\", \"alias\": \"TP-LINK_Power Strip_F2EF\", \"mac\": \"6C:5A:B0:15:F2:EF\"}",
-  "{\"host\": \"192.168.1.207\", \"deviceId\": \"9C:A2:F4:0C:C5:96\", \"alias\": \"Tank Lamp 1\", \"mac\": \"9C:A2:F4:0C:C5:96\"}",
-  "{\"host\": \"192.168.1.32\", \"deviceId\": \"9C:A2:F4:0C:C4:2F\", \"alias\": \"Plant Lamp\", \"mac\": \"9C:A2:F4:0C:C4:2F\"}",
-  "{\"host\": \"192.168.1.194\", \"deviceId\": \"9C:A2:F4:0C:D7:6A\", \"alias\": \"Tank Lamp 2\", \"mac\": \"9C:A2:F4:0C:D7:6A\"}",
-  "{\"host\": \"192.168.1.31\", \"deviceId\": \"9C:A2:F4:F2:A5:3B\", \"alias\": \"TV Lights\", \"mac\": \"9C:A2:F4:F2:A5:3B\"}"
-]'''
+TEST_DATA = [
+    {
+        "host": "192.168.1.12",
+        "deviceType": 4,
+        "deviceId": "6C:5A:B0:15:F2:EF",
+        "alias": "TP-LINK_Power Strip_F2EF",
+        "mac": "6C:5A:B0:15:F2:EF"
+    },
+    {
+        "host": "192.168.1.207",
+        "deviceType": 1,
+        "deviceId": "9C:A2:F4:0C:C5:96",
+        "alias": "Tank Lamp 1",
+        "mac": "9C:A2:F4:0C:C5:96"
+    },
+    {
+        "host": "192.168.1.32",
+        "deviceType": 1,
+        "deviceId": "9C:A2:F4:0C:C4:2F",
+        "alias": "Plant Lamp",
+        "mac": "9C:A2:F4:0C:C4:2F"
+    },
+    {
+        "host": "192.168.1.194",
+        "deviceType": 1,
+        "deviceId": "9C:A2:F4:0C:D7:6A",
+        "alias": "Tank Lamp 2",
+        "mac": "9C:A2:F4:0C:D7:6A"
+    },
+    {
+        "host": "192.168.1.31",
+        "deviceType": 6,
+        "deviceId": "9C:A2:F4:F2:A5:3B",
+        "alias": "TV Lights",
+        "mac": "9C:A2:F4:F2:A5:3B"
+    },
+]
