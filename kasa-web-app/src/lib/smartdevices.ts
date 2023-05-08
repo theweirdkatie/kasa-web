@@ -25,7 +25,11 @@ export class SmartDevice {
             this.name = deviceName(device.deviceType);
             this.alias = device.alias;
             this.mac = device.mac;
-            this.hasChildren = false;
+            if (device.deviceType === DeviceType.Strip) {
+                this.hasChildren = true;
+            } else {
+                this.hasChildren = false;
+            }
             this.children = [];
         }
     }
@@ -33,21 +37,76 @@ export class SmartDevice {
 }
 
 class ChildDevice {
-    id: string = "";
-    alias: string = "";
+    host: string;
+    deviceType: number;
+    deviceId: string;
+    name: string;
+    alias: string;
+    mac: string;
 
-    constructor() {
-        this.id = "";
-        this.alias = "";
+    constructor(device: SmartDeviceJSON) {
+        if (device === undefined) {
+            this.host = "192.168.1.207";
+            this.deviceType = 1;
+            this.deviceId = "8006E1AF7F5634FA56B4FD9131F313862053D3BE";
+            this.name = "Smart Wi-Fi Plug Mini";
+            this.alias = "Table";
+            this.mac = "9C:A2:F4:0C:C5:96";
+        } else {
+            this.host = device.host;
+            this.deviceType = device.deviceType;
+            this.deviceId = device.deviceId;
+            this.name = deviceName(device.deviceType);
+            this.alias = device.alias;
+            this.mac = device.mac;
+        }
     }
+}
+
+enum DeviceType {
+  Plug = 1,
+  Bulb,
+  Strip,
+  StripSocket,
+  Dimmer,
+  LightStrip,
+  Unknown = -1,
 }
 
 type SmartDeviceJSON =  {
     host: string;
-    deviceType: number;
+    deviceType: DeviceType;
     deviceId: string;
     alias: string;
     mac: string;
+}
+
+async function getChildren(parent: SmartDeviceJSON) {
+    let devices = await fetchChildren(parent.host);
+    console.log(devices);
+    let children: ChildDevice[] = [];
+    for (let i=0; i<devices.length; i++) {
+        children.push(new ChildDevice(devices[i]));
+    }
+    return children;
+}
+
+async function fetchChildren(host: string) {
+    let response = await fetch("http://localhost:8000/"+ host + "/children", {"method": "GET"});
+
+    const data = await response.json();
+
+    if (response.ok) {
+        if (data) {
+            console.log(data);
+            let devices: SmartDeviceJSON[] = data;
+            return devices;
+        } else {
+            return Promise.reject(new Error(`No devices found`));
+        }
+    } else {
+        return Promise.reject(new Error(`No response from server`))
+    }
 }
 
 export async function findDevices() {
@@ -55,7 +114,12 @@ export async function findDevices() {
 
     let smart_devices: SmartDevice[] = [];
     for (let i=0; i<devices.length; i++) {
-        smart_devices.push(new SmartDevice(devices[i]));
+        let dev = new SmartDevice(devices[i]);
+        console.log(dev);
+        if (dev.hasChildren) {
+            dev.children = await getChildren(devices[i]);
+        }
+        smart_devices.push(dev);
     }
     return smart_devices;
 }
@@ -67,7 +131,8 @@ async function fetchDevices(): Promise<SmartDeviceJSON[]> {
 
     if (response.ok) {
         if (data) {
-            let devices: SmartDeviceJSON[] = JSON.parse(data);
+            console.log(data);
+            let devices: SmartDeviceJSON[] = data;
             return devices;
         } else {
             return Promise.reject(new Error(`No devices found`));
@@ -87,4 +152,15 @@ function deviceName(n: number): string {
         case 6: return "Lightstrip";
         default: return "Undefined";
     }
+}
+
+export async function flip_state(device: SmartDevice) {
+    let response = await fetch(
+        "http://localhost:8000/"+ device.host + "/?" + new URLSearchParams({
+            "state": !device.
+        }), {"method": "GET"});
+
+    const data = await response.json();
+
+    return data;
 }

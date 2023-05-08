@@ -1,7 +1,7 @@
 from typing import Union, List
 import json
 from fastapi import FastAPI
-from kasa import Discover, SmartDevice
+from kasa import Discover, SmartDevice, SmartStrip
 from enum import Enum, auto
 import asyncio
 
@@ -15,10 +15,6 @@ class DeviceType(Enum):
   Dimmer = auto()
   LightStrip = auto()
   Unknown = -1,
-
-class ChildDevice:
-    id: str
-    alias: str
 
 class SmartDeviceAPI:
     host: str
@@ -34,28 +30,12 @@ class SmartDeviceAPI:
         self.alias = device.alias
         self.mac = device.mac
 
-    def toJSON(self):
-        _json = {
-            "host": self.host,
-            # "deviceType": self.deviceType,
-            "deviceId": self.deviceId,
-            "alias": self.alias,
-            "mac": self.mac
-        }
-
-        return json.dumps(_json)
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 @app.get("/devices/")
-async def list_devices(host: Union[str, None] = None):
-    if host:
-        dev = SmartDevice(host)
-        await dev.update()
-        return SmartDeviceAPI(dev).toJSON()
-    
+async def list_devices():
     try: 
         found_devices = await (Discover.discover())
 
@@ -63,14 +43,14 @@ async def list_devices(host: Union[str, None] = None):
 
         for device in found_devices.values():
             obj = SmartDeviceAPI(device)
-            devices.append(obj.toJSON())
+            devices.append(obj)
 
         return devices
     except:
         return "error"
     
     # For testing
-    # return json.dumps(TEST_DATA)
+    # return TEST_DATA
 
 TEST_DATA = [
     {
@@ -109,3 +89,50 @@ TEST_DATA = [
         "mac": "9C:A2:F4:F2:A5:3B"
     },
 ]
+
+@app.get("/{deviceId}")
+async def get_device(deviceId: str):
+    try:
+        dict = await (Discover.discover(target=deviceId))
+        if deviceId in dict:
+            dev = dict.get(deviceId)
+            return SmartDeviceAPI(dev)
+    except:
+        return "error"
+    
+@app.post("/{deviceId}/")
+async def set_device_property(deviceId: str, alias: Union[str, None] = None, state: Union[bool, None] = None):
+    try:
+        dict = await (Discover.discover(target=deviceId))
+        if deviceId in dict:
+            dev = dict.get(deviceId)
+            if alias:
+                await dev.set_alias(alias)
+            if isinstance(state, bool):
+                if state:
+                    await dev.turn_on()
+                else:
+                    await dev.turn_off()
+            await dev.update()
+            return SmartDeviceAPI(dev)
+        return "Bad device id"
+    except:
+        return "error"
+
+@app.get("/{deviceId}/children")
+async def get_children(deviceId: str):
+    dev = SmartStrip(deviceId)
+    try:
+        await dev.update()
+        
+        children = []
+
+        for child in dev.children:
+            obj = SmartDeviceAPI(child)
+            obj.deviceId = obj.deviceId[-3:]
+            children.append(obj)
+
+        return children
+    except:
+        return None
+    

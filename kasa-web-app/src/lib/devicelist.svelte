@@ -13,4 +13,9 @@
 
 {#each smartdevices as device}
     <Device device={device} />
+    {#if device.hasChildren}
+        {#each device.children as child}
+            <Device device={child} />
+        {/each}
+    {/if}
 {/each}
