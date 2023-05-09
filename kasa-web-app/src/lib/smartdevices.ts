@@ -154,11 +154,9 @@ function deviceName(n: number): string {
     }
 }
 
-export async function flip_state(device: SmartDevice) {
+export async function flipState(device: SmartDevice, currentState: boolean) {
     let response = await fetch(
-        "http://localhost:8000/"+ device.host + "/?" + new URLSearchParams({
-            "state": !device.
-        }), {"method": "GET"});
+        "http://localhost:8000/"+ device.host + "/?" + new URLSearchParams({"state": (!currentState).toString(),}), {"method": "POST"});
 
     const data = await response.json();
 

@@ -22,6 +22,7 @@ class SmartDeviceAPI:
     deviceId: str
     alias: str
     mac: str
+    state: bool
 
     def __init__(self, device: SmartDevice):
         self.host = device.host
@@ -29,6 +30,10 @@ class SmartDeviceAPI:
         self.deviceId = device.device_id
         self.alias = device.alias
         self.mac = device.mac
+        try:
+            self.state = device.is_on
+        except:
+            self.state = device.sys_info.get("relay_state")
 
 @app.get("/")
 async def root():
@@ -51,6 +56,52 @@ async def list_devices():
     
     # For testing
     # return TEST_DATA
+
+@app.get("/{deviceId}/")
+async def get_device(deviceId: str):
+    try:
+        dict = await (Discover.discover(target=deviceId))
+        return SmartDeviceAPI(dict.get(deviceId))
+    except:
+        return "error"
+    
+@app.post("/{deviceId}/")
+async def set_device_property(deviceId: str, alias: Union[str, None] = None, state: Union[bool, None] = None):
+    try:
+        dev = SmartDevice(deviceId)
+        
+        await dev.update()
+        
+        if alias:
+            await dev.set_alias(alias)
+        if isinstance(state, bool):
+            if state:
+                await dev.turn_on()
+            else:
+                await dev.turn_off()
+        await dev.update()
+        
+        return
+    except:
+        return "error"
+
+@app.get("/{deviceId}/children")
+async def get_children(deviceId: str):
+    dev = SmartStrip(deviceId)
+    try:
+        await dev.update()
+        
+        children = []
+
+        for child in dev.children:
+            obj = SmartDeviceAPI(child)
+            obj.deviceId = obj.deviceId[-3:]
+            children.append(obj)
+
+        return children
+    except:
+        return None
+    
 
 TEST_DATA = [
     {
@@ -89,50 +140,3 @@ TEST_DATA = [
         "mac": "9C:A2:F4:F2:A5:3B"
     },
 ]
-
-@app.get("/{deviceId}")
-async def get_device(deviceId: str):
-    try:
-        dict = await (Discover.discover(target=deviceId))
-        if deviceId in dict:
-            dev = dict.get(deviceId)
-            return SmartDeviceAPI(dev)
-    except:
-        return "error"
-    
-@app.post("/{deviceId}/")
-async def set_device_property(deviceId: str, alias: Union[str, None] = None, state: Union[bool, None] = None):
-    try:
-        dict = await (Discover.discover(target=deviceId))
-        if deviceId in dict:
-            dev = dict.get(deviceId)
-            if alias:
-                await dev.set_alias(alias)
-            if isinstance(state, bool):
-                if state:
-                    await dev.turn_on()
-                else:
-                    await dev.turn_off()
-            await dev.update()
-            return SmartDeviceAPI(dev)
-        return "Bad device id"
-    except:
-        return "error"
-
-@app.get("/{deviceId}/children")
-async def get_children(deviceId: str):
-    dev = SmartStrip(deviceId)
-    try:
-        await dev.update()
-        
-        children = []
-
-        for child in dev.children:
-            obj = SmartDeviceAPI(child)
-            obj.deviceId = obj.deviceId[-3:]
-            children.append(obj)
-
-        return children
-    except:
-        return None
-    
