@@ -1,7 +1,7 @@
 <script>
-    import Device from '../lib/smartdevice.svelte';
+    import Device from '$lib/components/smartdevice.svelte';
     import { List, Li, Accordion, AccordionItem, Span } from 'flowbite-svelte';
-    import { SmartDevice } from './smartdevices.ts';
+    import { SmartDevice } from '$lib/utils.ts';
     
     let bulb = new SmartDevice();
     let bulb2 = new SmartDevice();

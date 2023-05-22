@@ -1,9 +1,7 @@
 from typing import Union, List
-import json
 from fastapi import FastAPI
 from kasa import Discover, SmartDevice, SmartStrip
 from enum import Enum, auto
-import asyncio
 
 app = FastAPI()
 
@@ -60,17 +58,15 @@ async def list_devices():
 @app.get("/{deviceId}/")
 async def get_device(deviceId: str):
     try:
-        dict = await (Discover.discover(target=deviceId))
-        return SmartDeviceAPI(dict.get(deviceId))
+        dev = await (Discover.discover_single(deviceId))
+        return SmartDeviceAPI(dev)
     except:
         return "error"
     
 @app.post("/{deviceId}/")
 async def set_device_property(deviceId: str, alias: Union[str, None] = None, state: Union[bool, None] = None):
     try:
-        dev = SmartDevice(deviceId)
-        
-        await dev.update()
+        dev = await (Discover.discover_single(deviceId))
         
         if alias:
             await dev.set_alias(alias)
@@ -81,7 +77,7 @@ async def set_device_property(deviceId: str, alias: Union[str, None] = None, sta
                 await dev.turn_off()
         await dev.update()
         
-        return
+        return SmartDeviceAPI(dev)
     except:
         return "error"
 
@@ -106,7 +102,7 @@ async def get_children(deviceId: str):
 TEST_DATA = [
     {
         "host": "192.168.1.12",
-        "deviceType": 4,
+        "deviceType": 3,
         "deviceId": "6C:5A:B0:15:F2:EF",
         "alias": "TP-LINK_Power Strip_F2EF",
         "mac": "6C:5A:B0:15:F2:EF"
