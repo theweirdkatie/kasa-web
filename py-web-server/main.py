@@ -1,9 +1,18 @@
 from typing import Union, List
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from kasa import Discover, SmartDevice, SmartStrip
 from enum import Enum, auto
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class DeviceType(Enum):
   Plug = 1
@@ -68,16 +77,35 @@ async def set_device_property(deviceId: str, alias: Union[str, None] = None, sta
     try:
         dev = await (Discover.discover_single(deviceId))
         
-        if alias:
-            await dev.set_alias(alias)
-        if isinstance(state, bool):
-            if state:
-                await dev.turn_on()
-            else:
-                await dev.turn_off()
-        await dev.update()
-        
-        return SmartDeviceAPI(dev)
+        if dev.device_type.value == DeviceType.Strip.value:
+            strip = SmartStrip(deviceId)
+
+            await strip.update()
+
+            if alias:
+                await strip.set_alias(alias)
+            if isinstance(state, bool):
+                if state:
+                    for child in strip.children:
+                        await child.turn_on()
+                else:
+                    for child in strip.children:
+                        await child.turn_off()
+            await strip.update()
+
+            return SmartDeviceAPI(strip)
+            
+        else:
+            if alias:
+                await dev.set_alias(alias)
+            if isinstance(state, bool):
+                if state:
+                    await dev.turn_on()
+                else:
+                    await dev.turn_off()
+            await dev.update()
+            
+            return SmartDeviceAPI(dev)
     except:
         return "error"
 
@@ -98,6 +126,30 @@ async def get_children(deviceId: str):
     except:
         return None
     
+@app.post("/{parentIp}/children/{deviceId}")
+async def set_child_device_property(parentIp: str, deviceId: str, alias: Union[str, None] = None, state: Union[bool, None] = None):
+    parent = SmartStrip(parentIp)
+        
+    try:
+        await parent.update()
+
+        idx = int(deviceId)
+
+        if idx < len(parent.children):
+            if alias:
+                await parent.children[idx].set_alias(alias)
+            if isinstance(state, bool):
+                if state:
+                    await parent.children[idx].turn_on()
+                else:
+                    await parent.children[idx].turn_off()
+            await parent.update()
+            
+            return SmartDeviceAPI(parent.children[idx])
+        else:
+            return "child doesn't exist"
+    except:
+        return "error"
 
 TEST_DATA = [
     {

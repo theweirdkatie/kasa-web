@@ -3,7 +3,7 @@ import * as Db from '$lib/server/db';
 
 const app = express.Router();
 
-app.get('/devices', async (req, res) => {
+app.get('/localdevices', async (req, res) => {
     try {
         const devices = await Db.getInitialDevices();
         res.json(devices);
@@ -13,7 +13,7 @@ app.get('/devices', async (req, res) => {
     }
 });
 
-app.post('/devices', async (req,res) => {
+app.post('/localdevices', async (req,res) => {
     const devices = req.body();
 
     try {

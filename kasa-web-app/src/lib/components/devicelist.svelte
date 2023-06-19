@@ -1,5 +1,5 @@
 <script>
-    import Device from '$lib/components/smartdevice.svelte';
+    import Device, ChildDevice from '$lib/components/smartdevice.svelte';
     import { List, Li, Accordion, AccordionItem, Span } from 'flowbite-svelte';
     import { SmartDevice } from '$lib/utils.ts';
     
@@ -15,7 +15,7 @@
     <Device device={device} />
     {#if device.hasChildren}
         {#each device.children as child}
-            <Device device={child} />
+            <ChildDevice child_device={child} />
         {/each}
     {/if}
 {/each}

@@ -8,26 +8,28 @@
     let db_devices: SmartDevice[] = [];
     let looking = false;
 
-    $: (devices) {
-        await fetch({
+    $: if (devices.length >= 1) {
+        console.log("devices changed, add to db");
+        fetch('/localdevices', {
             method: 'POST',
             body: JSON.stringify({ devices }),
             headers: {
                 'Content-Type': 'application/json'
             }
-        });
+        }).then(resp => console.log(resp.json()));
     }
 
     async function find_devices() {
         console.log("looking");
         looking = true;
-        new_devices = await findDevices();
-        devices = combineDevices(devices, new_devices);
+        let new_devices = await SD.findDevices();
+        devices = combine_devices(devices, new_devices);
+        console.log("devices:", devices);
         looking = false;
         console.log("done");
     }
 
-    function combine_devices(current: SmartDevice[], found: SmartDevice[]) {
+    function combine_devices(current: SmartDevice[], found: SmartDevice[]): SmartDevice[] {
         for (const new_device of found) {
             // Check if the newItem already exists in currentArray
             const exists = current.some((item) => item.host === new_device.host); // Use isEqual function to compare objects
@@ -36,10 +38,12 @@
                 current.push(new_device);
             }
         }
+
+        return current;
     }
 
-    function get_devices_db() {
-        const response = await fetch('/devices');
+    async function get_devices_db() {
+        const response = await fetch('/localdevices');
 		db_devices = await response.json();
     }
     

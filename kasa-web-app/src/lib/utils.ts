@@ -156,3 +156,12 @@ export async function flipState(device: SmartDevice, currentState: boolean) {
 
     return data;
 }
+
+export async function childFlipState(device: ChildDevice, currentState: boolean) {
+    let response = await fetch(
+        "http://localhost:8000/"+ device.host + "/children/" + device.deviceId +"/?" + new URLSearchParams({"state": (!currentState).toString(),}), {"method": "POST"});
+
+    const data = await response.json();
+
+    return data;
+}
