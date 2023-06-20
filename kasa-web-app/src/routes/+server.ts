@@ -1,9 +1,10 @@
 import express from 'express';
 import * as Db from '$lib/server/db';
 
-const app = express.Router();
+const app = express();
+app.use(express.json());
 
-app.get('/localdevices', async (req, res) => {
+app.get('/db/devices', async (req, res) => {
     try {
         const devices = await Db.getInitialDevices();
         res.json(devices);
@@ -13,7 +14,7 @@ app.get('/localdevices', async (req, res) => {
     }
 });
 
-app.post('/localdevices', async (req,res) => {
+app.post('/db/devices', async (req,res) => {
     const devices = req.body();
 
     try {

@@ -3,10 +3,16 @@
     import { LightBulb, MagnifyingGlass } from 'svelte-heros-v2';
     import DeviceList from '$lib/components/devicelist.svelte';
     import * as SD from '$lib/utils';
+    import { onMount } from 'svelte'
 
     let devices: SmartDevice[] = [];
     let db_devices: SmartDevice[] = [];
     let looking = false;
+
+    onMount( async() => {
+        await get_devices_db();
+        devices = combine_devices(devices, db_devices);
+    })
 
     $: if (devices.length >= 1) {
         console.log("devices changed, add to db");
@@ -43,8 +49,19 @@
     }
 
     async function get_devices_db() {
-        const response = await fetch('/localdevices');
-		db_devices = await response.json();
+        const response = await fetch('/devices');
+
+        if (response.ok) {
+            data = await response.json();
+            if (data) {
+                console.log(data);
+                db_devices = data;
+            } else {
+                return new Error(`No devices found`);
+            }
+        } else {
+            return new Error(`No response from server`)
+        }
     }
     
 </script>
@@ -57,7 +74,7 @@
     <div class="col-start-2">
         <DeviceList smartdevices={devices} />
     </div>
-    <div class="col-start-2">
+    <!-- <div class="col-start-2">
         <DeviceList smartdevices={db_devices} />
-    </div>
+    </div> -->
 </div>
