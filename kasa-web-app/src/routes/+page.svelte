@@ -16,7 +16,7 @@
 
     $: if (devices.length >= 1) {
         console.log("devices changed, add to db");
-        fetch('/localdevices', {
+        fetch('/db/devices', {
             method: 'POST',
             body: JSON.stringify({ devices }),
             headers: {
@@ -49,7 +49,7 @@
     }
 
     async function get_devices_db() {
-        const response = await fetch('/devices');
+        const response = await fetch('/db/devices');
 
         if (response.ok) {
             data = await response.json();
