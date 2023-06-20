@@ -126,6 +126,21 @@ async def get_children(deviceId: str):
     except:
         return None
     
+@app.get("/{host}/children/{childId}")
+async def get_child(host: str, childId: str):
+    parent = SmartStrip(host)
+    try:
+        await parent.update()
+        
+        idx = int(childId)
+
+        if idx < len(parent.children):
+            return SmartDeviceAPI(parent.children[idx])
+        else:
+            return "child doesn't exist"
+    except:
+        return None
+    
 @app.post("/{parentIp}/children/{deviceId}")
 async def set_child_device_property(parentIp: str, deviceId: str, alias: Union[str, None] = None, state: Union[bool, None] = None):
     parent = SmartStrip(parentIp)

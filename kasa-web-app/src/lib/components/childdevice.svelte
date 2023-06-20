@@ -1,17 +1,21 @@
 <script lang="ts">
     import { DeskLamp, Power, PowerSocketUs as Plug, LedStrip as Strip, LedStripVariant as LedStrip } from 'svelte-materialdesign-icons';
     import { Button, Card, List, Li, DescriptionList, Layout } from 'flowbite-svelte';
-    import { ChildDevice, childFlipState }from '$lib/utils.ts';
+    import { ChildDevice, childFlipState, getDeviceState }from '$lib/utils.ts';
     import { Plus } from 'svelte-heros-v2';
     import { slide } from 'svelte/transition';
+    import { onMount } from 'svelte';
     
     export let child_device: ChildDevice;
-    let current_state = false;
+    let error = false;
+
+    onMount( async() => {
+        child_device.state = await getChildDeviceState(child_device);
+    })
 
     async function flip_state() {
         // console.log("fn");
-        await childFlipState(child_device, current_state);
-        current_state = !current_state;
+        child_device.state = await childFlipState(child_device);
     }
 
     let showData = false;
@@ -22,7 +26,7 @@
     <div class="flex flex-row w-full" horizontal={true}>
         <div id="device1icon"><Button class="!p-0 bg-transparent hover:bg-transparent !text-gray-500 hover:text-gray-500 !focus:border-transparent !focus:ring-0" on:click="{e => {showData = !showData}}"><DeskLamp size="40"/></Button></div>
         <div class="px-5 w-full"><h1 class="text-2xl py-1">{child_device.alias}</h1></div>
-        <div class="w-fit place-content-center"><Button on:click={flip_state} pill={true} outline={!current_state} class="!p-2 h-auto" size="xl"><Power /></Button></div>
+        <div class="w-fit place-content-center"><Button on:click={flip_state} pill={true} outline={!child_device.state} class="!p-2 h-auto" size="xl"><Power /></Button></div>
     </div>
     {#if showData}
     <div transition:slide="{{duration: 600}}" class="grid grid-cols-2 mt-2 pt-2 gap-3 ml-3 border-t-2">

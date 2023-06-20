@@ -4,6 +4,7 @@ export class SmartDevice {
     deviceId: string;
     alias: string;
     mac: string;
+    state: boolean;
     hasChildren: boolean;
     children: ChildDevice[];
 
@@ -14,6 +15,7 @@ export class SmartDevice {
             this.deviceId = "8006E1AF7F5634FA56B4FD9131F313862053D3BE";
             this.alias = "Table";
             this.mac = "9C:A2:F4:0C:C5:96";
+            this.state = false;
             this.hasChildren = false;
             this.children = [];
         } else {
@@ -22,6 +24,7 @@ export class SmartDevice {
             this.deviceId = device.deviceId;
             this.alias = device.alias;
             this.mac = device.mac;
+            this.state = device.state;
             if (device.deviceType === DeviceType.Strip) {
                 this.hasChildren = true;
             } else {
@@ -39,6 +42,7 @@ export class ChildDevice {
     deviceId: string;
     alias: string;
     mac: string;
+    state: boolean;
 
     constructor(device: SmartDeviceJSON) {
         if (device === undefined) {
@@ -47,12 +51,14 @@ export class ChildDevice {
             this.deviceId = "8006E1AF7F5634FA56B4FD9131F313862053D3BE";
             this.alias = "Table";
             this.mac = "9C:A2:F4:0C:C5:96";
+            this.state = false;
         } else {
             this.host = device.host;
             this.deviceType = device.deviceType;
             this.deviceId = device.deviceId;
             this.alias = device.alias;
             this.mac = device.mac;
+            this.state = device.state;
         }
     }
 }
@@ -73,6 +79,7 @@ type SmartDeviceJSON =  {
     deviceId: string;
     alias: string;
     mac: string;
+    state: boolean;
 }
 
 export async function findDevices() {
@@ -90,7 +97,7 @@ export async function findDevices() {
     return smart_devices;
 }
 
-async function fetchDevices(): Promise<SmartDeviceJSON[]> {
+async function fetchDevices() {
     let response = await fetch("http://localhost:8000/devices/", {"method": "GET"});
 
     const data = await response.json();
@@ -148,20 +155,68 @@ function deviceName(n: number): string {
     }
 }
 
-export async function flipState(device: SmartDevice, currentState: boolean) {
+export async function flipState(device: SmartDevice) {
     let response = await fetch(
-        "http://localhost:8000/"+ device.host + "/?" + new URLSearchParams({"state": (!currentState).toString(),}), {"method": "POST"});
+        "http://localhost:8000/"+ device.host + "/?" + new URLSearchParams({"state": (!device.state).toString(),}), {"method": "POST"});
 
     const data = await response.json();
 
     return data;
 }
 
-export async function childFlipState(device: ChildDevice, currentState: boolean) {
+export async function childFlipState(device: ChildDevice) {
     let response = await fetch(
-        "http://localhost:8000/"+ device.host + "/children/" + device.deviceId +"/?" + new URLSearchParams({"state": (!currentState).toString(),}), {"method": "POST"});
+        "http://localhost:8000/"+ device.host + "/children/" + device.deviceId +"/?" + new URLSearchParams({"state": (!device.state).toString(),}), {"method": "POST"});
 
     const data = await response.json();
 
-    return data;
+    if (response.ok) {
+        if (data) {
+            console.log(data);
+            let state: boolean = data;
+            return state;
+        } else {
+            return Promise.reject(new Error(`Error changing device state: `, data));
+        }
+    } else {
+        return Promise.reject(new Error(`No response from server`))
+    }
+}
+
+export async function getDeviceState(device: SmartDevice) {
+    let response = await fetch(
+        "http://localhost:8000/"+ device.host, {"method": "GET"});
+
+    const data = await response.json();
+
+    if (response.ok) {
+        if (data) {
+            console.log(data);
+            let dev: SmartDevice = data;
+            return dev.state;
+        } else {
+            return Promise.reject(new Error(`Error: `, data));
+        }
+    } else {
+        return Promise.reject(new Error(`No response from server`))
+    }
+}
+
+export async function getChildDeviceState(device: ChildDevice) {
+    let response = await fetch(
+        "http://localhost:8000/"+ device.host + "/children/" + device.deviceId, {"method": "GET"});
+
+    const data = await response.json();
+
+    if (response.ok) {
+        if (data) {
+            console.log(data);
+            let dev: ChildDevice = data;
+            return dev.state;
+        } else {
+            return Promise.reject(new Error(`Error: `, data));
+        }
+    } else {
+        return Promise.reject(new Error(`No response from server`))
+    }
 }

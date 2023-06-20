@@ -1,5 +1,6 @@
 <script>
-    import Device, ChildDevice from '$lib/components/smartdevice.svelte';
+    import Device from '$lib/components/smartdevice.svelte';
+    import ChildDevice from '$lib/components/childdevice.svelte';
     import { List, Li, Accordion, AccordionItem, Span } from 'flowbite-svelte';
     import { SmartDevice } from '$lib/utils.ts';
     

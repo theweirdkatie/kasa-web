@@ -28,6 +28,7 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
             deviceId,
             alias,
             mac,
+            state: false,
             hasChildren,
             children: []
           };
@@ -40,6 +41,7 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
             deviceId: childId,
             alias: childAlias,
             mac: childMac,
+            state: false,
           });
         }
 
