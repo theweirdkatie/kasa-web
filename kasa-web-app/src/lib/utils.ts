@@ -88,7 +88,6 @@ export async function findDevices() {
     let smart_devices: SmartDevice[] = [];
     for (let i=0; i<devices.length; i++) {
         let dev = new SmartDevice(devices[i]);
-        console.log(dev);
         if (dev.hasChildren) {
             dev.children = await getChildren(devices[i]);
         }
@@ -104,7 +103,6 @@ async function fetchDevices() {
 
     if (response.ok) {
         if (data) {
-            console.log(data);
             let devices: SmartDeviceJSON[] = data;
             return devices;
         } else {
@@ -117,7 +115,6 @@ async function fetchDevices() {
 
 async function getChildren(parent: SmartDeviceJSON) {
     let devices = await fetchChildren(parent.host);
-    console.log(devices);
     let children: ChildDevice[] = [];
     for (let i=0; i<devices.length; i++) {
         children.push(new ChildDevice(devices[i]));
@@ -132,7 +129,6 @@ async function fetchChildren(host: string) {
 
     if (response.ok) {
         if (data) {
-            console.log(data);
             let devices: SmartDeviceJSON[] = data;
             return devices;
         } else {
@@ -172,7 +168,6 @@ export async function childFlipState(device: ChildDevice) {
 
     if (response.ok) {
         if (data) {
-            console.log(data);
             let state: boolean = data;
             return state;
         } else {
@@ -191,7 +186,6 @@ export async function getDeviceState(device: SmartDevice) {
 
     if (response.ok) {
         if (data) {
-            console.log(data);
             let dev: SmartDevice = data;
             return dev.state;
         } else {
@@ -210,7 +204,6 @@ export async function getChildDeviceState(device: ChildDevice) {
 
     if (response.ok) {
         if (data) {
-            console.log(data);
             let dev: ChildDevice = data;
             return dev.state;
         } else {

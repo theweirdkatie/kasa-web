@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS SmartDevice (
   host TEXT PRIMARY KEY,
   deviceType INTEGER NOT NULL,
   deviceId TEXT NOT NULL,
-  name TEXT NOT NULL,
   alias TEXT,
   mac TEXT NOT NULL,
   hasChildren INTEGER NOT NULL

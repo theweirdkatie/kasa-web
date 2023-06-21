@@ -21,8 +21,8 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
 
       // Group the results by parent device ID
       const groupedResults: Record<number, SmartDevice> = results.reduce((acc: Record<string, SmartDevice>, row: any) => {
-        const { host, deviceType, deviceId, name, alias, mac, hasChildren, childAlias, childMac } = row;
-        if (!host) {
+        const { host, deviceType, deviceId, alias, mac, hasChildren, childAlias, childMac } = row;
+        if (!acc[host]) {
           acc[host] = {
             host,
             deviceType,
@@ -106,6 +106,7 @@ export function insertNewDevices(devices: SmartDevice[]) {
 
       resolve();
     } catch (error) {
+      console.log(error);
       reject(error);
     } finally {
       db.close();

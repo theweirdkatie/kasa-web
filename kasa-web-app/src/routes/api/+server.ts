@@ -18,11 +18,9 @@ export async function POST({ request }: { request: Request }): Promise<Response>
     const data = await request.json();
 
     if (data) {
-        console.log(data);
-        let devices: SmartDeviceJSON[] = data;
         let smart_devices: SmartDevice[] = [];
-        for (let i=0; i<devices.length; i++) {
-            let dev = new SmartDevice(devices[i]);
+        for (let i=0; i<data.devices.length; i++) {
+            let dev = new SmartDevice(data.devices[i]);
             smart_devices.push(dev);
         }
         try {
