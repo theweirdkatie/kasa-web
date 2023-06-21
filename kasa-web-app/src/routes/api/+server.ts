@@ -23,13 +23,13 @@ export async function POST({ request }: { request: Request }): Promise<Response>
         let smart_devices: SmartDevice[] = [];
         for (let i=0; i<devices.length; i++) {
             let dev = new SmartDevice(devices[i]);
-            console.log(dev);
             smart_devices.push(dev);
         }
         try {
             await Db.insertNewDevices(smart_devices);
             return new Response(new Blob(), { status: 200, statusText: 'Devices inserted successfully' });
         } catch (error) {
+            console.log(error);
             return new Response(JSON.stringify(error), { status: 500, statusText: 'Unable to insert devices into db' })
         }
     } else {

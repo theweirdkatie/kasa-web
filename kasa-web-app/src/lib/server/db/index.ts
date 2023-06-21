@@ -2,9 +2,10 @@ import Database from 'better-sqlite3';
 import type { SmartDevice } from '../../utils';
 
 const DB_PATH = './src/lib/server/db/KasaSmartDevices.db'
-const db = new Database(DB_PATH, { verbose: console.log });
+// const db = new Database(DB_PATH, { verbose: console.log });
 
 export function getInitialDevices(): Promise<SmartDevice[]> {
+  const db = new Database(DB_PATH, { verbose: console.log });
   return new Promise<SmartDevice[]>((resolve, reject) => {
     let devices: SmartDevice[] = [];
   
@@ -13,14 +14,14 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
       const query = `
         SELECT s.*, c.alias AS childAlias, c.mac AS childMac
         FROM SmartDevice s
-        LEFT JOIN ChildDevice c ON s.id = c.parentId
+        LEFT JOIN ChildDevice c ON s.host = c.parentId
       `;
       const stmt = db.prepare(query);
       const results = stmt.all();
 
       // Group the results by parent device ID
       const groupedResults: Record<number, SmartDevice> = results.reduce((acc: Record<string, SmartDevice>, row: any) => {
-        const { host, deviceType, deviceId, name, alias, mac, hasChildren, childId, childAlias, childMac } = row;
+        const { host, deviceType, deviceId, name, alias, mac, hasChildren, childAlias, childMac } = row;
         if (!host) {
           acc[host] = {
             host,
@@ -33,16 +34,17 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
             children: []
           };
         }
-
-        if (childId) {
+        let child = 0;
+        if (hasChildren) {
           acc[host].children.push({
             host,
             deviceType: 4,
-            deviceId: childId,
+            deviceId: String(child),
             alias: childAlias,
             mac: childMac,
             state: false,
           });
+          child += 1;
         }
 
         return acc;
@@ -61,6 +63,7 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
 }
 
 export function insertNewDevices(devices: SmartDevice[]) {
+  const db = new Database(DB_PATH, { verbose: console.log });
   return new Promise<void>((resolve, reject) => {
     const insertSmartDevice = db.prepare(`
       INSERT INTO SmartDevice (host, deviceType, deviceId, name, alias, mac, hasChildren)
@@ -68,7 +71,7 @@ export function insertNewDevices(devices: SmartDevice[]) {
     `);
 
     const insertChildDevice = db.prepare(`
-      INSERT INTO ChildDevice (parentId, childId, alias)
+      INSERT INTO ChildDevice (parentId, alias, mac)
       VALUES (?, ?, ?)
     `);
 

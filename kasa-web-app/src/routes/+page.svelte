@@ -52,7 +52,7 @@
         const response = await fetch('/api');
 
         if (response.ok) {
-            data = await response.json();
+            let data = await response.json();
             if (data) {
                 console.log(data);
                 db_devices = data;
