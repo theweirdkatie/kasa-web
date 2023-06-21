@@ -73,7 +73,7 @@ enum DeviceType {
   Unknown = -1,
 }
 
-type SmartDeviceJSON =  {
+export type SmartDeviceJSON =  {
     host: string;
     deviceType: DeviceType;
     deviceId: string;

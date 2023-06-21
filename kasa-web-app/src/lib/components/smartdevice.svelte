@@ -2,9 +2,8 @@
     import { DeskLamp, Power, PowerSocketUs as Plug, LedStrip as Strip, LedStripVariant as LedStrip } from 'svelte-materialdesign-icons';
     import { Button, Card, List, Li, DescriptionList, Layout } from 'flowbite-svelte';
     import { SmartDevice, flipState, getDeviceState }from '$lib/utils.ts';
-    import { Plus } from 'svelte-heros-v2';
     import { slide } from 'svelte/transition';
-    import onMount from 'svelte';
+    import { onMount } from 'svelte';
     
     export let device: SmartDevice;
     let error = false;

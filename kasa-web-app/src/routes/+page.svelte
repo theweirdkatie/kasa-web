@@ -16,13 +16,13 @@
 
     $: if (devices.length >= 1) {
         console.log("devices changed, add to db");
-        fetch('/db/devices', {
+        fetch('/api', {
             method: 'POST',
             body: JSON.stringify({ devices }),
             headers: {
                 'Content-Type': 'application/json'
             }
-        }).then(resp => console.log(resp.json()));
+        }).then(resp => console.log(resp));
     }
 
     async function find_devices() {
@@ -49,7 +49,7 @@
     }
 
     async function get_devices_db() {
-        const response = await fetch('/db/devices');
+        const response = await fetch('/api');
 
         if (response.ok) {
             data = await response.json();

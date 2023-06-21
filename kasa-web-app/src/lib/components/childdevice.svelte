@@ -1,8 +1,7 @@
 <script lang="ts">
     import { DeskLamp, Power, PowerSocketUs as Plug, LedStrip as Strip, LedStripVariant as LedStrip } from 'svelte-materialdesign-icons';
     import { Button, Card, List, Li, DescriptionList, Layout } from 'flowbite-svelte';
-    import { ChildDevice, childFlipState, getDeviceState }from '$lib/utils.ts';
-    import { Plus } from 'svelte-heros-v2';
+    import { ChildDevice, childFlipState, getChildDeviceState }from '$lib/utils.ts';
     import { slide } from 'svelte/transition';
     import { onMount } from 'svelte';
     

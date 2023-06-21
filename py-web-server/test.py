@@ -30,14 +30,14 @@ async def list_devices():
 @app.get("/{deviceId}/")
 async def get_device(deviceId: str):
     for device in TEST_DATA:
-        if device.host == deviceId:
+        if device["host"] == deviceId:
             return device
     return "error"
     
 @app.post("/{deviceId}/")
 async def set_device_property(deviceId: str, alias: Union[str, None] = None, state: Union[bool, None] = None):
     for device in TEST_DATA:
-        if device.host == deviceId:
+        if device["host"] == deviceId:
             if device.deviceType == DeviceType.Strip.value:
                 if alias:
                     device.alias = alias

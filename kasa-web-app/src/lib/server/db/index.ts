@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import type { SmartDevice } from '../../utils';
 
-const DB_PATH = './KasaSmartDevices.db'
+const DB_PATH = './src/lib/server/db/KasaSmartDevices.db'
 const db = new Database(DB_PATH, { verbose: console.log });
 
 export function getInitialDevices(): Promise<SmartDevice[]> {
@@ -11,7 +11,7 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
     try {
       // Fetch all devices with their child devices
       const query = `
-        SELECT s.*, c.id AS childId, c.alias AS childAlias, c.mac AS childMac
+        SELECT s.*, c.alias AS childAlias, c.mac AS childMac
         FROM SmartDevice s
         LEFT JOIN ChildDevice c ON s.id = c.parentId
       `;
@@ -19,10 +19,10 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
       const results = stmt.all();
 
       // Group the results by parent device ID
-      const groupedResults: Record<number, SmartDevice> = results.reduce((acc: Record<number, SmartDevice>, row: any) => {
-        const { id, host, deviceType, deviceId, name, alias, mac, hasChildren, childId, childAlias, childMac } = row;
-        if (!acc[id]) {
-          acc[id] = {
+      const groupedResults: Record<number, SmartDevice> = results.reduce((acc: Record<string, SmartDevice>, row: any) => {
+        const { host, deviceType, deviceId, name, alias, mac, hasChildren, childId, childAlias, childMac } = row;
+        if (!host) {
+          acc[host] = {
             host,
             deviceType,
             deviceId,
@@ -35,7 +35,7 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
         }
 
         if (childId) {
-          acc[id].children.push({
+          acc[host].children.push({
             host,
             deviceType: 4,
             deviceId: childId,
