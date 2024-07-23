@@ -1,5 +1,5 @@
 # Kasa Web
-![Static Badge](https://img.shields.io/badge/status-in_progress-orange) ![Static Badge](https://img.shields.io/badge/email?style=plastic&logo=google&logoColor=green&link=mailto%3Akstedman.engr%40gmail.com)
+![Static Badge](https://img.shields.io/badge/status-in_progress-orange) [![Static Badge](https://img.shields.io/badge/email?style=plastic&logo=google&logoColor=green)](mailto:kstedman.engr@gmail.com)
 
 ## Description
 Kasa Web is a web application built with SvelteKit that allows users to effortlessly control and customize their Kasa devices.
