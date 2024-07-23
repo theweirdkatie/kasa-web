@@ -66,13 +66,13 @@ export function insertNewDevices(devices: SmartDevice[]) {
   const db = new Database(DB_PATH, { verbose: console.log });
   return new Promise<void>((resolve, reject) => {
     const insertSmartDevice = db.prepare(`
-      INSERT INTO SmartDevice (host, deviceType, deviceId, name, alias, mac, hasChildren)
+      INSERT INTO SmartDevice (host, deviceType, deviceId, alias, mac, _state, hasChildren)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     const insertChildDevice = db.prepare(`
-      INSERT INTO ChildDevice (parentId, alias, mac)
-      VALUES (?, ?, ?)
+      INSERT INTO ChildDevice (parentId, mac, alias, _state)
+      VALUES (?, ?, ?, ?)
     `);
 
     try {
@@ -93,13 +93,14 @@ export function insertNewDevices(devices: SmartDevice[]) {
             device.deviceId,
             device.alias,
             device.mac,
+            device.state,
             device.hasChildren ? 1 : 0
           );
           const parentId = result.lastInsertRowid;
 
           // Insert the child devices
           for (const child of device.children) {
-            insertChildDevice.run(child.host, child.mac, child.alias);
+            insertChildDevice.run(parentId, child.mac, child.alias, child.state);
           }
         }
       })();
