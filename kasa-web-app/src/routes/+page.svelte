@@ -2,8 +2,8 @@
     import { Button } from 'flowbite-svelte';
     import { LightBulb, MagnifyingGlass } from 'svelte-heros-v2';
     import DeviceList from '$lib/components/devicelist.svelte';
-    import * as SD from '$lib/utils';
     import { onMount } from 'svelte'
+	import { findDevices, SmartDevice } from '$lib/utils';
 
     let devices: SmartDevice[] = [];
     let db_devices: SmartDevice[] = [];
@@ -28,7 +28,7 @@
     async function find_devices() {
         console.log("looking");
         looking = true;
-        let new_devices = await SD.findDevices();
+        let new_devices = await findDevices();
         devices = combine_devices(devices, new_devices);
         console.log("devices:", devices);
         looking = false;
