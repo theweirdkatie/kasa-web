@@ -12,7 +12,7 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
     try {
       // Fetch all devices with their child devices
       const query = `
-        SELECT s.*, c.alias AS childAlias, c.mac AS childMac
+        SELECT s.*, c.alias AS childAlias, c.deviceId AS childDeviceId, c._state as childState
         FROM SmartDevice s
         LEFT JOIN ChildDevice c ON s.host = c.parentId
       `;
@@ -21,7 +21,7 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
 
       // Group the results by parent device ID
       const groupedResults: Record<number, SmartDevice> = results.reduce((acc: Record<string, SmartDevice>, row: any) => {
-        const { host, deviceType, deviceId, alias, mac, hasChildren, childAlias, childMac } = row;
+        const { host, deviceType, deviceId, alias, mac, hasChildren, _state, childAlias, childDeviceId, childState } = row;
         if (!acc[host]) {
           acc[host] = {
             host,
@@ -29,7 +29,7 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
             deviceId,
             alias,
             mac,
-            state: false,
+            state: _state,
             hasChildren,
             children: []
           };
@@ -38,11 +38,9 @@ export function getInitialDevices(): Promise<SmartDevice[]> {
         if (hasChildren) {
           acc[host].children.push({
             host,
-            deviceType: 4,
-            deviceId: String(child),
+            deviceId: childDeviceId,
             alias: childAlias,
-            mac: childMac,
-            state: false,
+            state: childState,
           });
           child += 1;
         }
@@ -66,12 +64,12 @@ export function insertNewDevices(devices: SmartDevice[]) {
   const db = new Database(DB_PATH, { verbose: console.log });
   return new Promise<void>((resolve, reject) => {
     const insertSmartDevice = db.prepare(`
-      INSERT INTO SmartDevice (host, deviceType, deviceId, alias, mac, _state, hasChildren)
+      INSERT INTO SmartDevice (host, deviceType, deviceId, alias, mac, hasChildren, _state)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     const insertChildDevice = db.prepare(`
-      INSERT INTO ChildDevice (parentId, mac, alias, _state)
+      INSERT INTO ChildDevice (parentId, deviceId, alias, _state)
       VALUES (?, ?, ?, ?)
     `);
 
@@ -93,14 +91,14 @@ export function insertNewDevices(devices: SmartDevice[]) {
             device.deviceId,
             device.alias,
             device.mac,
-            device.state,
-            device.hasChildren ? 1 : 0
+            device.hasChildren,
+            device.state
           );
           const parentId = result.lastInsertRowid;
 
           // Insert the child devices
           for (const child of device.children) {
-            insertChildDevice.run(parentId, child.mac, child.alias, child.state);
+            insertChildDevice.run(parentId, child.deviceId, child.alias, child.state);
           }
         }
       })();

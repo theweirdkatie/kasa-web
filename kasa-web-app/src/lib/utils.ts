@@ -38,27 +38,21 @@ export class SmartDevice {
 
 export class ChildDevice {
     host: string;
-    deviceType: number;
-    deviceId: string;
-    alias: string;
-    mac: string;
-    state: boolean;
+    deviceId: number;
+        alias: string;
+        state: boolean;
 
     constructor(device: SmartDeviceJSON) {
         if (device === undefined) {
             this.host = "192.168.1.207";
-            this.deviceType = 1;
-            this.deviceId = "8006E1AF7F5634FA56B4FD9131F313862053D3BE";
+            this.deviceId = 0;
             this.alias = "Table";
-            this.mac = "9C:A2:F4:0C:C5:96";
-            this.state = false;
+                        this.state = false;
         } else {
             this.host = device.host;
-            this.deviceType = device.deviceType;
-            this.deviceId = device.deviceId;
+            this.deviceId = +device.deviceId;
             this.alias = device.alias;
-            this.mac = device.mac;
-            this.state = device.state;
+                        this.state = device.state;
         }
     }
 }

@@ -5,15 +5,15 @@ CREATE TABLE IF NOT EXISTS SmartDevice (
   deviceId TEXT NOT NULL,
   alias TEXT,
   mac TEXT NOT NULL,
-  _state INTEGER NOT NULL,
-  hasChildren INTEGER NOT NULL
+  hasChildren BOOLEAN NOT NULL
+  _state BOOLEAN NOT NULL,
 );
 
 -- Create the ChildDevice table
 CREATE TABLE IF NOT EXISTS ChildDevice (
   parentId TEXT NOT NULL,
-  mac TEXT NOT NULL,
+  deviceId INTEGER NOT NULL,
   alias TEXT,
-  _state INTEGER NOT NULL,
+  _state BOOLEAN NOT NULL,
   FOREIGN KEY (parentId) REFERENCES SmartDevice(host) ON DELETE CASCADE
 );
